@@ -1,0 +1,4 @@
+.idea
+config/api.yml
+data/*
+!data/.gitkeep
