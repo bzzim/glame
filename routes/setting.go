@@ -25,7 +25,9 @@ func NewRouteSettingController(c setting.Controller, am gin.HandlerFunc, cm gin.
 func (r *RouteSettingController) AddRoutes(router *gin.RouterGroup) {
 	configGroup := router.Group("config")
 	configGroup.GET("", r.controller.Config)
+	configGroup.GET("0/css", r.controller.Css)
 	configGroup.PUT("", r.authMiddleware, r.controller.SaveConfig)
+	configGroup.PUT("0/css", r.controller.SaveCss)
 
 	themesGroup := router.Group("themes")
 	themesGroup.GET("", r.controller.Themes)

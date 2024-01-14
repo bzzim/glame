@@ -1,12 +1,13 @@
 package setting
 
 import (
+	"net/http"
+	"strings"
+
 	"github.com/bzzim/glame/models"
 	"github.com/bzzim/glame/pkg/utils"
 	"github.com/bzzim/glame/responses"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"strings"
 )
 
 const themesFile = "data/themes.json"
@@ -35,7 +36,7 @@ func (r *Controller) AddTheme(ctx *gin.Context) {
 	}
 
 	for _, t := range themes.Themes {
-		if strings.ToLower(t.Name) == strings.ToLower(request.Name) {
+		if strings.EqualFold(strings.ToLower(t.Name), strings.ToLower(request.Name)) {
 			responses.NewErrorResponse(ctx, http.StatusBadRequest, "Name must be unique")
 			return
 		}

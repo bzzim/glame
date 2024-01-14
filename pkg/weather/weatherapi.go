@@ -11,15 +11,15 @@ import (
 type WeatherApiResponse struct {
 	Current struct {
 		LastUpdated string  `json:"last_updated"`
-		TempC       float32 `json:"temp_c"`
-		TempF       float32 `json:"temp_f"`
+		TempC       float64 `json:"temp_c"`
+		TempF       float64 `json:"temp_f"`
 		IsDay       int     `json:"is_day"`
 		Condition   struct {
 			Text string `json:"text"`
 			Code int    `json:"code"`
 		} `json:"condition"`
-		WindMph  float32 `json:"wind_mph"`
-		WindKph  float32 `json:"wind_kph"`
+		WindMph  float64 `json:"wind_mph"`
+		WindKph  float64 `json:"wind_kph"`
 		Humidity int     `json:"humidity"`
 		Cloud    int     `json:"cloud"`
 	} `json:"current"`

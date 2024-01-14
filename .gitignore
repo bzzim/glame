@@ -2,3 +2,4 @@
 config/api.yml
 data/*
 !data/.gitkeep
+.DS_Store

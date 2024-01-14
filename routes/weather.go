@@ -16,5 +16,5 @@ func NewWeatherRouteController(weatherController controllers.WeatherController) 
 func (r *WeatherRouteController) AddRoutes(router *gin.RouterGroup) {
 	weatherGroup := router.Group("weather")
 	weatherGroup.GET("", r.controller.Weather)
-	weatherGroup.GET("update", r.controller.UpdateWeather)
+	weatherGroup.GET("update", r.controller.UpdateWeather) // TODO: add middleware
 }

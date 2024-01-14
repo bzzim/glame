@@ -5,6 +5,12 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"log"
+	"log/slog"
+	"net/http"
+	"os"
+	"time"
+
 	"github.com/bzzim/glame/config"
 	"github.com/bzzim/glame/controllers"
 	settingController "github.com/bzzim/glame/controllers/setting"
@@ -17,11 +23,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"log"
-	"log/slog"
-	"net/http"
-	"os"
-	"time"
 )
 
 var (
@@ -53,10 +54,10 @@ func main() {
 		panic("failed to connect database")
 	}
 
-	err = db.AutoMigrate(&models.Category{}, &models.Bookmark{}, &models.Weather{})
-	if err != nil {
-		panic("failed automigrate")
-	}
+	// err = db.AutoMigrate(&models.Category{}, &models.Bookmark{}, &models.Weather{})
+	// if err != nil {
+	// 	panic("failed automigrate")
+	// }
 
 	jwt := token.NewJWT(apiConfig.App.Name, apiConfig.Auth.Secret)
 
@@ -99,6 +100,16 @@ func main() {
 		authMiddleware,
 		checkAuthMiddleware)
 	categoryRouter.AddRoutes(router)
+
+	bookmarkLogger := logger.With(slog.Group("controller", slog.String("name", "bookmarkController")))
+	bookmarkRouter := routes.NewRouteBookmarkController(
+		controllers.NewBookmarkController(db, bookmarkLogger),
+		authMiddleware,
+		checkAuthMiddleware)
+	bookmarkRouter.AddRoutes(router)
+
+	staticRouter := routes.NewRouteStaticController()
+	staticRouter.AddRoutes(r)
 
 	server := &http.Server{
 		Addr:           ":7777",

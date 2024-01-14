@@ -22,6 +22,10 @@ func NewRouteAppController(c controllers.AppController, am gin.HandlerFunc, cm g
 }
 
 func (r *RouteAppController) AddRoutes(router *gin.RouterGroup) {
-	AppGroup := router.Group("apps")
-	AppGroup.GET("", r.checkAuthMiddleware, r.controller.App)
+	appGroup := router.Group("apps")
+	appGroup.GET("", r.checkAuthMiddleware, r.controller.Apps)
+	appGroup.POST("", r.authMiddleware, r.controller.AddApp)
+	appGroup.PUT(":id", r.authMiddleware, r.controller.SaveApp)
+	appGroup.PUT("0/reorder", r.authMiddleware, r.controller.ReorderApp)
+	appGroup.DELETE(":id", r.authMiddleware, r.controller.DeleteApp)
 }

@@ -26,6 +26,6 @@ func (r *RouteCategoryController) AddRoutes(router *gin.RouterGroup) {
 	categoryGroup.GET("", r.checkAuthMiddleware, r.controller.Categories)
 	categoryGroup.POST("", r.authMiddleware, r.controller.AddCategory)
 	categoryGroup.PUT(":id", r.authMiddleware, r.controller.SaveCategory)
-	categoryGroup.PUT("0/reorder", r.authMiddleware, r.controller.OrderCategory)
+	categoryGroup.PUT("0/reorder", r.authMiddleware, r.controller.ReorderCategory)
 	categoryGroup.DELETE(":id", r.authMiddleware, r.controller.DeleteCategory)
 }
