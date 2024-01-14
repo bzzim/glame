@@ -26,7 +26,7 @@ func NewCategoryController(db *gorm.DB, log *slog.Logger) CategoryController {
 }
 
 func (r *CategoryController) Categories(ctx *gin.Context) {
-	isAuth := ctx.GetBool("isAuth")
+	isAuth := helper.UserIsAuth(ctx)
 	var categories []models.Category
 	var query interface{}
 	if !isAuth {

@@ -28,6 +28,10 @@ type WeatherApiResponse struct {
 type WeatherApi struct {
 }
 
+func New() WeatherApi {
+	return WeatherApi{}
+}
+
 func (r *WeatherApi) Get(secret string, lat, lon float64) (*Weather, error) {
 	url := fmt.Sprintf("https://api.weatherapi.com/v1/current.json?key=%s&q=%f,%f", secret, lat, lon)
 	resp, err := http.Get(url)
@@ -38,6 +42,10 @@ func (r *WeatherApi) Get(secret string, lat, lon float64) (*Weather, error) {
 
 	var data WeatherApiResponse
 	body, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		return nil, err
+	}
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, errors.New(string(body))

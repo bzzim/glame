@@ -27,7 +27,7 @@ func NewAppController(db *gorm.DB, log *slog.Logger) AppController {
 }
 
 func (r *AppController) Apps(ctx *gin.Context) {
-	isAuth := ctx.GetBool("isAuth")
+	isAuth := helper.UserIsAuth(ctx)
 	var apps []models.App
 	var query interface{}
 	if !isAuth {

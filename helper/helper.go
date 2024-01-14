@@ -9,10 +9,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bzzim/glame/middleware"
 	"github.com/bzzim/glame/models"
 	"github.com/bzzim/glame/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
+
+func UserIsAuth(ctx *gin.Context) bool {
+	return ctx.GetBool(middleware.AuthKey)
+}
 
 func LoadConfig(fileName string) (*models.Config, error) {
 	data, err := utils.ReadJson[models.Config](fileName)

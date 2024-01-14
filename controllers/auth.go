@@ -1,14 +1,14 @@
 package controllers
 
 import (
-	"fmt"
+	"net/http"
+	"strconv"
+	"time"
+
 	"github.com/bzzim/glame/pkg/token"
 	"github.com/bzzim/glame/requests"
 	"github.com/bzzim/glame/responses"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"strconv"
-	"time"
 )
 
 type AuthController struct {
@@ -65,7 +65,7 @@ func (r *AuthController) Validate(ctx *gin.Context) {
 		responses.NewErrorResponse(ctx, http.StatusBadRequest, responses.BadRequestMessage)
 		return
 	}
-	fmt.Println(request.Token)
+
 	isValid := r.jwt.Validate(request.Token)
 	if isValid {
 		data := responses.Validate{Token: responses.ValidateToken{IsValid: isValid}}
