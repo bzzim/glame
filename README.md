@@ -15,3 +15,5 @@ Flame is self-hosted startpage for your server. Its design is inspired (heavily)
 - 🔨 Dozens of options to customize Flame interface to your needs, including support for custom CSS, 15 built-in color themes and custom theme builder
 - ☀️ Weather widget with current temperature, cloud coverage and animated weather status
 - 🐳 Docker integration to automatically pick and add apps based on their labels
+
+## Installation
