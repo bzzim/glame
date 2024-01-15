@@ -2,7 +2,7 @@ version: '3.6'
 
 services:
   glame:
-    image: glame:1.0
+    image: bzzim/glame
     container_name: glame
     volumes:
       - ./data:/app/data
