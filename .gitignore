@@ -1,5 +1,7 @@
 .idea
 config/api.yml
 data/*
+public/*
 !data/.gitkeep
+!public/.gitkeep
 .DS_Store

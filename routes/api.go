@@ -1,7 +1,10 @@
 package routes
 
 import (
+	"fmt"
 	"log/slog"
+	"net/http"
+	"strings"
 
 	"github.com/bzzim/glame/config"
 	"github.com/bzzim/glame/controllers"
@@ -9,6 +12,7 @@ import (
 	"github.com/bzzim/glame/middleware"
 	"github.com/bzzim/glame/pkg/token"
 	"github.com/bzzim/glame/pkg/weather"
+	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -41,7 +45,7 @@ func NewApiRoute(router *gin.Engine, cfg *config.ApiConfig, jwt *token.JWT, db *
 func (r *ApiRoute) compose() {
 	r.static()
 
-	apiGroup := r.router.Group("/api")
+	apiGroup := r.router.Group("api")
 	r.auth(apiGroup)
 	r.settings(apiGroup)
 	r.weather(apiGroup)
@@ -54,7 +58,7 @@ func (r *ApiRoute) auth(api *gin.RouterGroup) {
 	controller := controllers.NewAuthController(r.jwt, r.cfg.Auth.Password)
 	group := api.Group("auth")
 	group.POST("", controller.Login)
-	group.POST("/validate", controller.Validate)
+	group.POST("validate", controller.Validate)
 }
 
 func (r *ApiRoute) settings(api *gin.RouterGroup) {
@@ -116,6 +120,21 @@ func (r *ApiRoute) bookmarks(api *gin.RouterGroup) {
 }
 
 func (r *ApiRoute) static() {
-	r.router.Static("uploads", "./data/uploads")
-	r.router.StaticFile("flame.css", "./data/flame.css")
+	r.router.Use(static.Serve("/", static.LocalFile("./public", false)))
+	r.router.NoRoute(func(c *gin.Context) {
+		if strings.HasPrefix(c.Request.RequestURI, "/uploads") {
+			c.File(fmt.Sprintf("./data%s", c.Request.RequestURI))
+			return
+		} else if strings.EqualFold(c.Request.RequestURI, "/flame.css") {
+			c.File("./data/flame.css")
+			return
+		}
+		if !strings.HasPrefix(c.Request.RequestURI, "/api") {
+			c.File("./public/index.html")
+			return
+		}
+		c.String(http.StatusNotFound, "page not found")
+	})
+	// r.router.Static("/uploads", "./data/uploads")
+	// r.router.StaticFile("/flame.css", "./data/flame.css")
 }

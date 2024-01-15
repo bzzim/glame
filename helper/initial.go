@@ -11,6 +11,9 @@ import (
 )
 
 func InitFiles() {
+	if err := utils.MakeDir("data"); err != nil {
+		log.Fatal("Error when create dir: ", err)
+	}
 	initialFile := "initialData/initialFiles.json"
 	content, err := os.ReadFile(initialFile)
 	if err != nil {
@@ -40,6 +43,9 @@ func InitFiles() {
 }
 
 func InitConfig() {
+	if err := utils.MakeDir("data"); err != nil {
+		log.Fatal("Error when create dir: ", err)
+	}
 	configFile := "data/config.json"
 	configInitialFile := "initialData/initialConfig.json"
 

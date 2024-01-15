@@ -12,6 +12,7 @@ import (
 	"github.com/bzzim/glame/config"
 	"github.com/bzzim/glame/helper"
 	"github.com/bzzim/glame/middleware"
+	"github.com/bzzim/glame/models"
 	"github.com/bzzim/glame/pkg/token"
 	"github.com/bzzim/glame/routes"
 	"github.com/gin-gonic/gin"
@@ -55,6 +56,14 @@ func main() {
 	db, err := gorm.Open(sqlite.Open("data/db.sqlite"), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Can't connect to database: ", err)
+	}
+
+	if err = db.AutoMigrate(&models.Category{}, &models.Bookmark{}, &models.App{}); err != nil {
+		log.Fatal("failed automigrate: ", err)
+	}
+	// by default gorm create table `weathers`
+	if err = db.Table("weather").AutoMigrate(&models.Weather{}); err != nil {
+		log.Fatal("failed automigrate: ", err)
 	}
 
 	r := gin.New()

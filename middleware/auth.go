@@ -25,7 +25,7 @@ func CheckAuth(jwt *token.JWT, log *slog.Logger) gin.HandlerFunc {
 		c.Set(AuthKey, false)
 		header := c.GetHeader("Authorization-Flame")
 		if len(header) == 0 {
-			log.Info("empty auth header")
+			log.Debug("empty auth header")
 			c.Next()
 			return
 		}
