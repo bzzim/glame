@@ -12,6 +12,5 @@ var (
 )
 
 func NewErrorResponse(c *gin.Context, statusCode int, error string) {
-	// TODO: тут почему-то отправляется заголовок "text/plain; charset=utf-8" - проверить критично ли это
 	c.AbortWithStatusJSON(statusCode, Base{false, error, nil})
 }

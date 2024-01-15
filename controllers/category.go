@@ -2,6 +2,10 @@ package controllers
 
 import (
 	"fmt"
+	"log/slog"
+	"net/http"
+	"strconv"
+
 	"github.com/SamuelTissot/sqltime"
 	"github.com/bzzim/glame/controllers/setting"
 	"github.com/bzzim/glame/helper"
@@ -10,9 +14,6 @@ import (
 	"github.com/bzzim/glame/responses"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"log/slog"
-	"net/http"
-	"strconv"
 )
 
 type CategoryController struct {
@@ -25,8 +26,7 @@ func NewCategoryController(db *gorm.DB, log *slog.Logger) CategoryController {
 }
 
 func (r *CategoryController) Categories(ctx *gin.Context) {
-	//sqltime.TruncateOff = time.Microsecond
-	isAuth := ctx.GetBool("isAuth")
+	isAuth := helper.UserIsAuth(ctx)
 	var categories []models.Category
 	var query interface{}
 	if !isAuth {
@@ -39,20 +39,32 @@ func (r *CategoryController) Categories(ctx *gin.Context) {
 		responses.NewErrorResponse(ctx, http.StatusInternalServerError, responses.ServerErrorMessage)
 		return
 	}
-	// TODO: в оригинале есл строит сортировка по имени, то еще и сами ссылки сортируем по имени
+
 	orderField := "name"
+	orderType := "asc"
 	if cfg.UseOrdering == "createdAt" {
-		orderField = "created_at"
+		orderField = "id"
+		orderType = "desc"
 	} else if cfg.UseOrdering == "orderId" {
-		orderField = "order_id"
+		orderField = "orderId"
 	}
 
-	order := fmt.Sprintf("%s asc", orderField)
-	r.db.Order(order).Where(query).Preload("Bookmarks").Find(&categories)
+	order := fmt.Sprintf("%s %s", orderField, orderType)
+	r.db.Order(order).Where(query).Preload("Bookmarks", func(db *gorm.DB) *gorm.DB {
+		db = db.Order(order)
+		return db
+	}).Find(&categories)
 	responses.NewSuccessResponse(ctx, categories)
 }
 
 func (r *CategoryController) AddCategory(ctx *gin.Context) {
+	cfg, err := helper.LoadConfig(setting.ConfigFile)
+	if err != nil {
+		r.log.Warn(err.Error())
+		responses.NewErrorResponse(ctx, http.StatusInternalServerError, responses.ServerErrorMessage)
+		return
+	}
+
 	var request requests.Category
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		responses.NewErrorResponse(ctx, http.StatusBadRequest, responses.BadRequestMessage)
@@ -62,6 +74,7 @@ func (r *CategoryController) AddCategory(ctx *gin.Context) {
 	row := models.Category{
 		Name:      request.Name,
 		IsPublic:  request.IsPublic,
+		IsPinned:  cfg.PinCategoriesByDefault,
 		CreatedAt: sqltime.Now(),
 		UpdatedAt: sqltime.Now(),
 	}
@@ -85,6 +98,7 @@ func (r *CategoryController) SaveCategory(ctx *gin.Context) {
 		return
 	}
 
+	// TODO: к нижней тудушке - а может потому что тут всегда обновляется дата?
 	row := models.Category{Id: id, UpdatedAt: sqltime.Now()}
 	if err := r.db.First(&row).Error; err != nil {
 		responses.NewErrorResponse(ctx, http.StatusInternalServerError, responses.ServerErrorMessage)
@@ -100,7 +114,7 @@ func (r *CategoryController) SaveCategory(ctx *gin.Context) {
 		row = request
 	}
 
-	if err := r.db.Save(&row).Error; err != nil {
+	if err := r.db.Omit("createdAt").Save(&row).Error; err != nil {
 		responses.NewErrorResponse(ctx, http.StatusInternalServerError, responses.ServerErrorMessage)
 		return
 	}
@@ -108,7 +122,7 @@ func (r *CategoryController) SaveCategory(ctx *gin.Context) {
 	responses.NewSuccessResponse(ctx, row)
 }
 
-func (r *CategoryController) OrderCategory(ctx *gin.Context) {
+func (r *CategoryController) ReorderCategory(ctx *gin.Context) {
 	var request struct {
 		Categories []models.Category `json:"categories"`
 	}

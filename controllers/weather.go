@@ -1,17 +1,17 @@
 package controllers
 
 import (
-	"fmt"
+	"log/slog"
+	"net/http"
+
 	"github.com/bzzim/glame/controllers/setting"
 	"github.com/bzzim/glame/helper"
 	"github.com/bzzim/glame/models"
+	"github.com/bzzim/glame/pkg/utils"
 	"github.com/bzzim/glame/pkg/weather"
 	"github.com/bzzim/glame/responses"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"log/slog"
-	"net/http"
-	"reflect"
 )
 
 type WeatherController struct {
@@ -26,7 +26,7 @@ func NewWeatherController(db *gorm.DB, ws weather.Service, log *slog.Logger) Wea
 
 func (r *WeatherController) Weather(ctx *gin.Context) {
 	var rows []models.Weather
-	r.db.Order("createdAt desc").Limit(1).Find(&rows)
+	r.db.Table("weather").Order("createdAt desc").Limit(1).Find(&rows)
 	responses.NewSuccessResponse(ctx, rows)
 }
 
@@ -47,29 +47,17 @@ func (r *WeatherController) UpdateWeather(ctx *gin.Context) {
 
 	row := models.Weather{
 		ExtLastUpdate: data.ExtLastUpdate,
-		TempC:         data.TempC,
-		TempF:         data.TempF,
+		TempC:         utils.Float64ToFixed(data.TempC, 1),
+		TempF:         utils.Float64ToFixed(data.TempF, 1),
 		IsDay:         data.IsDay,
 		Cloud:         data.Cloud,
 		ConditionText: data.ConditionText,
 		ConditionCode: data.ConditionCode,
 		Humidity:      data.Humidity,
-		WindK:         data.WindK,
-		WindM:         data.WindM,
+		WindK:         utils.Float64ToFixed(data.WindK, 1),
+		WindM:         utils.Float64ToFixed(data.WindM, 1),
 	}
-	r.db.Create(&row)
+	r.db.Table("weather").Create(&row)
 
 	responses.NewSuccessResponse(ctx, row)
-}
-
-// TODO: вынести в хелпер
-func (r *WeatherController) getFloat(unk interface{}) (float64, error) {
-	var floatType = reflect.TypeOf(float64(0))
-	v := reflect.ValueOf(unk)
-	v = reflect.Indirect(v)
-	if !v.Type().ConvertibleTo(floatType) {
-		return 0, fmt.Errorf("cannot convert %v to float64", v.Type())
-	}
-	fv := v.Convert(floatType)
-	return fv.Float(), nil
 }
